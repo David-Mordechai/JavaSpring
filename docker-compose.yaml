@@ -1,0 +1,35 @@
+version: '3.7'
+
+services:
+    dbpostgresql:
+        container_name: dbpostgresql
+        image: dbpostgresql
+        build:
+            context: ./database
+            dockerfile: Dockerfile
+        ports:
+            - "5432:5432"
+        environment:
+            - POSTGRES_PASSWORD=Welcome
+            - POSTGRES_USER=postgres
+            - POSTGRES_DB=conference_app
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+    spring-boot-api:
+        container_name: spring-boot-api
+        image: spring-boot-api
+        build: 
+            context: ./conference-demo
+            dockerfile: Dockerfile
+        ports: 
+            - "5400:5000"
+        depends_on: 
+            - dbpostgresql
+        environment:
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://dbpostgresql:5432/conference_app
+            - SPRING_DATASOURCE_USERNAME=postgres
+            - SPRING_DATASOURCE_PASSWORD=Welcome
+            - SPRING_JPA_HIBERNATE_DDL_AUTO=update
